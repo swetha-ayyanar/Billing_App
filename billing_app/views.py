@@ -34,7 +34,6 @@ def generate_bill(request):
         qty = int(row.get('quantity', 0))
         try:
             product = Product.objects.select_for_update().get(product_id=pid)
-            print(product,"...................")
         except Product.DoesNotExist:
             transaction.set_rollback(True)
             return JsonResponse({'error': f'Product {pid} not found'}, status=400)
@@ -44,9 +43,7 @@ def generate_bill(request):
 
 
         item_base = product.price_per_unit * qty
-        print(item_base,'item base')
         item_tax = item_base * (product.tax_percentage / 100)
-        print(item_tax, "item tax")
         item_total = int(item_base) + int(item_tax)
         items.append({'product': product, 'qty': qty, 'price': item_base, 'tax': item_tax, 'total': item_total})
         total += item_total
@@ -95,7 +92,7 @@ def generate_bill(request):
 
 
     # send invoice async
-    send_invoice_email(bill.id, customer_email)
+    # send_invoice_email(bill.id, customer_email)
 
 
     # prepare response (bill summary URL)
