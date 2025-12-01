@@ -1,0 +1,36 @@
+html
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Invoice #{{ bill.id }}</title>
+</head>
+<body>
+<h1>Invoice #{{ bill.id }}</h1>
+<p>Date: {{ bill.created_at }}</p>
+<p>Customer: {{ bill.customer_email }}</p>
+<table border="1" cellpadding="4">
+<tr><th>Product</th><th>Qty</th><th>Price</th><th>Tax</th><th>Total</th></tr>
+{% for item in bill.items.all %}
+<tr>
+<td>{{ item.product.name }} ({{ item.product.product_id }})</td>
+<td>{{ item.quantity }}</td>
+<td>{{ item.price }}</td>
+<td>{{ item.tax }}</td>
+<td>{{ item.total }}</td>
+</tr>
+{% endfor %}
+</table>
+<p><strong>Total: </strong> {{ bill.total_amount }}</p>
+<p><strong>Paid: </strong> {{ bill.amount_paid }}</p>
+<p><strong>Balance/Change: </strong> {{ bill.balance_amount }}</p>
+<h3>Return Denominations</h3>
+<ul>
+{% for r in bill.return_denominations.all %}
+<li>{{ r.denomination_value }} x {{ r.count }}</li>
+{% empty %}
+<li>No change.</li>
+{% endfor %}
+</ul>
+</body>
+</html>

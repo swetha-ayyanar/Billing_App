@@ -1,0 +1,84 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Billing Page</title>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+<h1>Create Bill</h1>
+<label>Customer Email: <input id="customer_email" type="email"></label>
+<h3>Products</h3>
+<table id="products_table">
+<tr><th>Product ID</th><th>Quantity</th><th></th></tr>
+</table>
+<button id="add_row">Add New</button>
+
+
+<h3>Denominations Given</h3>
+<div id="denominations">
+{% for d in denominations %}
+<label>{{ d.value }}: <input type="number" class="denom" data-val="{{ d.value }}" min="0" value="0"></label>
+{% endfor %}
+</div>
+
+
+<label>Amount Paid: <input id="amount_paid" type="number" step="0.01"></label>
+
+
+<button id="generate">Generate Bill</button>
+
+
+<h2>Invoice Preview</h2>
+<div id="invoice_container"></div>
+
+
+<script>
+function addRow(){
+const row = `<tr>
+<td><input class="product_id"></td>
+<td><input class="quantity" type="number" min="1" value="1"></td>
+<td><button class="remove">Remove</button></td>
+</tr>`;
+$('#products_table').append(row);
+}
+
+
+$(document).ready(function(){
+$('#add_row').click(addRow);
+addRow();
+$(document).on('click', '.remove', function(){ $(this).closest('tr').remove(); });
+
+
+$('#generate').click(function(){
+const customer_email = $('#customer_email').val();
+const amount_paid = $('#amount_paid').val();
+const products = [];
+$('#products_table tr').each(function(idx, tr){
+if(idx===0) return; // skip header
+const pid = $(tr).find('.product_id').val();
+const qty = $(tr).find('.quantity').val();
+if(pid) products.push({product_id: pid, quantity: qty});
+});
+const denominations = {};
+$('.denom').each(function(){
+const v = $(this).data('val');
+const c = $(this).val();
+denominations[v] = c || 0;
+});
+
+
+const payload = {customer_email, amount_paid, products, denominations};
+fetch('{% url "generate_bill" %}', {
+method: 'POST',
+headers: {'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}'},
+body: JSON.stringify(payload)
+}).then(r=>r.json()).then(data=>{
+if(data.error){ alert(data.error); return; }
+$('#invoice_container').html(data.invoice_html);
+alert('Bill generated. Bill ID: ' + data.bill_id);
+}).catch(e=>{ console.error(e); alert('Error generating bill') });
+});
+});
+</script>
+</html>

@@ -1,0 +1,18 @@
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>Customer History</title></head>
+<body>
+<h1>Purchase History</h1>
+<form method="get">
+<label>Email: <input name="email" value="{{ request.GET.email }}"></label>
+<button type="submit">Search</button>
+</form>
+<ul>
+{% for b in bills %}
+<li><a href="{% url 'invoice_view' b.id %}">Bill #{{ b.id }}</a> - {{ b.created_at }} - {{ b.total_amount }}</li>
+{% empty %}
+<li>No bills found</li>
+{% endfor %}
+</ul>
+</body>
+</html>
